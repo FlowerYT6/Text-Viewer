@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text Viewer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        textarea {
+            width: 100%;
+            height: 400px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            border: 1px solid #ccc;
+            padding: 10px;
+            background-color: #f5f5f5;
+        }
+        input[type="text"], input[type="button"] {
+            margin-bottom: 10px;
+            padding: 8px;
+            font-size: 16px;
+            width: 100%;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .error {
+            color: red;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Text Viewer</h1>
+    
+    <!-- ID input field to create a valid ID -->
+    <input type="text" id="createIdInput" placeholder="Enter valid ID to create message (e.g., FLOWER_5-A_^3*)T<Z8^XS_O53$)" />
+    
+    <!-- Error message for invalid ID creation -->
+    <div id="createIdErrorMessage" class="error"></div>
+
+    <br>
+
+    <!-- ID input field to view message based on ID -->
+    <input type="text" id="viewIdInput" placeholder="Enter ID to view message" />
+    
+    <!-- Error message for invalid ID to view -->
+    <div id="viewIdErrorMessage" class="error"></div>
+    
+    <!-- Textarea to display the message -->
+    <textarea id="textArea" readonly></textarea>
+
+    <!-- Section to create and save a message after a valid ID is entered -->
+    <div id="createMessageSection" style="display: none;">
+        <h3>Create a Message for the ID</h3>
+        <input type="text" id="messageInput" placeholder="Enter your message" />
+        <input type="button" id="saveMessageButton" value="Save Message" />
+    </div>
+
+    <script>
+        // Regular expression to validate the ID format for creating messages
+        const idPattern = /^FLOWER_[A-Za-z0-9\-_+^*()<>$&@#%]*$/;
+
+        // Load saved messages from local storage or initialize as an empty object
+        let savedMessages = JSON.parse(localStorage.getItem('savedMessages')) || {};
+
+        // Predefined ID and corresponding message for viewing
+        const predefinedId = "FLOWER_5-A_^3*)T<Z8^XS_O53$";
+        const predefinedMessage = "This ID Is A Example Text";
+
+        // Event listener for the 'Create ID' input field
+        document.getElementById('createIdInput').addEventListener('input', function(event) {
+            const inputId = event.target.value;
+            const textArea = document.getElementById('textArea');
+            const errorMessage = document.getElementById('createIdErrorMessage');
+            const createMessageSection = document.getElementById('createMessageSection');
+            
+            // Validate the ID creation format
+            if (idPattern.test(inputId)) {
+                textArea.value = `You entered a valid ID for creating message: ${inputId}`;
+                errorMessage.textContent = ''; // Clear any error messages
+                
+                // Show the message creation section
+                createMessageSection.style.display = 'block';
+                
+                // Store the valid ID in a global variable for later use
+                window.validCreateId = inputId;
+            } else {
+                textArea.value = '';
+                errorMessage.textContent = 'Invalid ID format. Please follow the pattern: FLOWER_5-A_^3*)T<Z8^XS_O53$';
+                
+                // Hide the message creation section
+                createMessageSection.style.display = 'none';
+            }
+        });
+
+        // Event listener for the 'View ID' input field
+        document.getElementById('viewIdInput').addEventListener('input', function(event) {
+            const inputId = event.target.value;
+            const textArea = document.getElementById('textArea');
+            const errorMessage = document.getElementById('viewIdErrorMessage');
+            
+            // Check if the entered ID matches the predefined ID
+            if (inputId === predefinedId) {
+                textArea.value = predefinedMessage;
+                errorMessage.textContent = ''; // Clear any error messages
+            } else if (savedMessages[inputId]) {
+                textArea.value = savedMessages[inputId];
+                errorMessage.textContent = ''; // Clear any error messages
+            } else {
+                textArea.value = '';
+                errorMessage.textContent = 'ID not found. Please enter a valid ID to view the message.';
+            }
+        });
+
+        // Event listener for the 'Save Message' button
+        document.getElementById('saveMessageButton').addEventListener('click', function() {
+            const messageInput = document.getElementById('messageInput').value;
+            const validId = window.validCreateId;
+            
+            // Check if a valid ID has been entered and a message is provided
+            if (validId && messageInput) {
+                // Save the ID and its corresponding message to the savedMessages object
+                savedMessages[validId] = messageInput;
+
+                // Save the updated object to local storage
+                localStorage.setItem('savedMessages', JSON.stringify(savedMessages));
+
+                // Display a confirmation message
+                alert(`Message for ID "${validId}" saved successfully!`);
+
+                // Clear the message input field
+                document.getElementById('messageInput').value = '';
+                document.getElementById('createIdInput').value = '';
+                document.getElementById('createMessageSection').style.display = 'none'; // Hide the section again
+            } else {
+                alert('Please enter a valid message before saving.');
+            }
+        });
+    </script>
+</body>
+</html>
